@@ -1,6 +1,10 @@
 """TLS certificate chain scanner.
 
-Primary: asyncio SSL with explicit IPv4 resolution.
+Primary: asyncio SSL with explicit IPv4 resolution via the robust multi-resolver
+in ``dns.py`` (system → Quad9 → Cloudflare → Google). This avoids a class of
+false "unknown" classifications where the scanner runner's system resolver
+hiccups for a second and marks a whole batch of municipalities as
+``Connection error: [Errno -3] Temporary failure in name resolution``.
 
 Root cause of most timeouts: Nordic municipal servers have both A and AAAA records,
 but their IPv6 port 443 endpoints are firewalled/unreachable. asyncio.open_connection
@@ -13,10 +17,17 @@ Recovery chain when primary fails:
   1. www fallback            — try www.{domain}:443
   2. Cert mismatch recovery  — SSL verify failed → connect without verify (shared hosting)
   3. Norwegian .no fallback  — bare .no domain fails → retry {slug}.kommune.no
-  4. HTTP-only probe         — timeout/reset → check if port 80 is open
+  4. HTTP-only safety-net    — before marking http_only, try www.{domain} with
+                               verification disabled (catches slow/IPv6-broken
+                               hosts that do serve TLS).
+  5. HTTP-only probe         — timeout/reset → check if port 80 is open
+  6. Transient-error retry   — if the final state is a DNS/timeout/reset style
+                               error, wait briefly and retry the whole chain
+                               once with a longer timeout (captures slow
+                               self-hosted servers like avesta.se).
 
 Additional enrichment after successful scan:
-  5. HTTPS redirect following — if domain redirects to a different host (e.g.
+  7. HTTPS redirect following — if domain redirects to a different host (e.g.
      stockholm.se → start.stockholm), scan the redirect target instead so we
      classify the CA actually serving municipality content.
 """
@@ -24,7 +35,6 @@ Additional enrichment after successful scan:
 from __future__ import annotations
 
 import asyncio
-import socket
 import ssl
 from datetime import UTC, datetime
 
@@ -34,6 +44,7 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from loguru import logger
 
+from .dns import lookup_a
 from .models import CertChainEntry, Evidence, SignalKind
 from .signatures import SIGNATURES, match_patterns
 
@@ -47,7 +58,23 @@ WEIGHTS: dict[SignalKind, float] = {
     SignalKind.CRL_ENDPOINT: 0.03,
 }
 
-_RETRY_ERRORS = ("Connection timeout", "Connection error", "Connection reset")
+# Retryable transient-looking error prefixes. These are the situations where a
+# second attempt (possibly with a longer timeout) has a meaningful chance of
+# succeeding — DNS glitches on the runner, slow self-hosted servers, etc.
+_RETRY_ERRORS = (
+    "Connection timeout",
+    "Connection error",
+    "Connection reset",
+    "DNS resolution failed",
+)
+
+# Upper bound for the widened retry timeout. The first pass uses the caller's
+# ``timeout`` argument (default 15 s); the retry uses ``min(timeout * 3, _MAX_RETRY_TIMEOUT)``.
+_MAX_RETRY_TIMEOUT = 45
+
+# Short backoff between the first pass and the retry. Long enough to let a
+# transient DNS glitch settle, short enough that it does not dominate scan time.
+_RETRY_BACKOFF_SECONDS = 2.0
 
 
 def _no_kommune_fallback(domain: str) -> str | None:
@@ -74,7 +101,48 @@ def _no_kommune_fallback(domain: str) -> str | None:
 
 
 async def scan_certificate_chain(domain: str, port: int = 443, timeout: int = 15) -> dict:
-    """Scan TLS cert chain with full recovery chain + redirect following."""
+    """Scan TLS cert chain with full recovery chain + redirect following.
+
+    Runs the recovery chain once at the caller-supplied ``timeout``. If the
+    final state is a transient-looking error (timeout, connection reset, DNS
+    glitch on the scanner runner) we wait ``_RETRY_BACKOFF_SECONDS`` and retry
+    the whole chain once with a widened timeout. This second pass is the one
+    that captures e.g. self-hosted Swedish municipalities like ``avesta.se``
+    whose apex serves TLS but needs >15 s to finish the handshake, and whole
+    batches of SiteVision-hosted sites hit by a single runner-side DNS hiccup.
+    """
+    result = await _scan_with_recovery_chain(domain, port, timeout)
+
+    # ── Recovery 6: transient-error retry ─────────────────────────────────────
+    if _is_transient_error(result.get("error")):
+        retry_timeout = min(timeout * 3, _MAX_RETRY_TIMEOUT)
+        logger.debug(
+            "Retrying {} after transient error ({}) with timeout {}s",
+            domain,
+            result.get("error"),
+            retry_timeout,
+        )
+        await asyncio.sleep(_RETRY_BACKOFF_SECONDS)
+        retry = await _scan_with_recovery_chain(domain, port, retry_timeout)
+        if not retry.get("error") or not _is_transient_error(retry.get("error")):
+            return retry
+
+    return result
+
+
+def _is_transient_error(error: str | None) -> bool:
+    """Return True when ``error`` looks transient enough to warrant a retry."""
+    if not error:
+        return False
+    # ``http_only`` is a *terminal* classification (we proved port 80 is open
+    # and 443 isn't) — never retry those, they are genuinely not HTTPS.
+    if error == "http_only":
+        return False
+    return any(marker in error for marker in _RETRY_ERRORS)
+
+
+async def _scan_with_recovery_chain(domain: str, port: int, timeout: int) -> dict:
+    """One full pass of the recovery chain (without the outer transient retry)."""
     result = await _scan_asyncio_ssl(domain, port, timeout)
 
     # ── Recovery 1: www fallback ──────────────────────────────────────────────
@@ -115,14 +183,32 @@ async def scan_certificate_chain(domain: str, port: int = 443, timeout: int = 15
                 kommune["scanned_domain"] = kommune_domain
                 return kommune
 
-    # ── Recovery 4: HTTP-only probe ────────────────────────────────────────────
+    # ── Recovery 4: HTTP-only safety-net ───────────────────────────────────────
+    # Before we commit to ``http_only`` (which is sticky and ends up in the UI
+    # as "Unknown"), give the ``www`` host one more chance with verification
+    # disabled. A few Swedish municipalities (e.g. landskrona.se, skara.se) were
+    # previously misclassified as http_only because their apex either times out
+    # or serves a cert whose SAN does not cover it — the real TLS endpoint lives
+    # on ``www.<domain>`` with a perfectly valid cert.
+    if result["error"] and any(s in result["error"] for s in _RETRY_ERRORS):
+        if not domain.startswith("www."):
+            www_noverify = await _scan_asyncio_ssl_no_verify(
+                f"www.{domain}", port, min(timeout, 10)
+            )
+            if not www_noverify.get("error") and www_noverify.get("chain"):
+                www_noverify["domain"] = domain
+                www_noverify["scanned_domain"] = f"www.{domain}"
+                www_noverify["cert_mismatch"] = True
+                return www_noverify
+
+    # ── Recovery 5: HTTP-only probe ────────────────────────────────────────────
     if result["error"] and any(s in result["error"] for s in _RETRY_ERRORS):
         http_ok = await _check_port_open(domain, 80, timeout=5)
         result["http_accessible"] = http_ok
         if http_ok:
             result["error"] = "http_only"
 
-    # ── Enrichment 5: HTTPS cross-domain redirect following ─────────────────────────
+    # ── Enrichment 7: HTTPS cross-domain redirect following ─────────────────────────
     # Only run when we successfully got a cert — check if the domain redirects
     # to a different host (e.g. stockholm.se → start.stockholm). If so, the
     # redirect target is the actual municipal website; scan it instead.
@@ -167,20 +253,22 @@ async def _connect_and_scan(domain: str, port: int, timeout: int, verify: bool) 
             ssl_ctx.check_hostname = False
             ssl_ctx.verify_mode = ssl.CERT_NONE
 
-        # Resolve to IPv4 explicitly to avoid broken-IPv6 endpoints.
-        # Many Nordic municipal servers have AAAA records but their IPv6
-        # port 443 is firewalled — IPv4 works fine in <300ms.
-        connect_target: str = domain
+        # Resolve to IPv4 explicitly to avoid broken-IPv6 endpoints AND to avoid
+        # transient system-resolver failures (``[Errno -3] Temporary failure in
+        # name resolution``) marking whole batches of municipalities as
+        # ``connection_error``. ``lookup_a`` uses a multi-resolver fallback
+        # chain (system → Quad9 → Cloudflare → Google) and returns [] only
+        # when every resolver has failed — which we treat as an authoritative
+        # ``DNS resolution failed`` (still retryable by the outer retry).
         try:
-            loop = asyncio.get_event_loop()
-            ipv4_infos = await asyncio.wait_for(
-                loop.getaddrinfo(domain, port, family=socket.AF_INET, type=socket.SOCK_STREAM),
-                timeout=5,
-            )
-            if ipv4_infos:
-                connect_target = ipv4_infos[0][4][0]
-        except Exception:
-            pass  # No IPv4 → fall back to hostname (system default, may use IPv6)
+            ipv4_addrs = await lookup_a(domain)
+        except Exception as e:
+            logger.debug("Robust DNS lookup raised for {}: {}", domain, e)
+            ipv4_addrs = []
+        if not ipv4_addrs:
+            result["error"] = f"DNS resolution failed: no A record for {domain}"
+            return result
+        connect_target = ipv4_addrs[0]
 
         reader, writer = await asyncio.wait_for(
             asyncio.open_connection(connect_target, port, ssl=ssl_ctx, server_hostname=domain),
@@ -268,18 +356,20 @@ async def _follow_https_redirect(domain: str, timeout: int = 6) -> str | None:
 
 
 async def _check_port_open(domain: str, port: int, timeout: int = 5) -> bool:
-    """Return True if a TCP connection to domain:port succeeds within timeout."""
+    """Return True if a TCP connection to domain:port succeeds within timeout.
+
+    Uses the same robust multi-resolver as ``_connect_and_scan`` so a system
+    resolver hiccup does not cause us to wrongly classify a reachable host as
+    unreachable.
+    """
     try:
-        # Also try IPv4 explicitly here
-        loop = asyncio.get_event_loop()
         try:
-            ipv4_infos = await asyncio.wait_for(
-                loop.getaddrinfo(domain, port, family=socket.AF_INET, type=socket.SOCK_STREAM),
-                timeout=3,
-            )
-            target = ipv4_infos[0][4][0] if ipv4_infos else domain
+            ipv4_addrs = await lookup_a(domain)
         except Exception:
-            target = domain
+            ipv4_addrs = []
+        if not ipv4_addrs:
+            return False
+        target = ipv4_addrs[0]
 
         _, writer = await asyncio.wait_for(
             asyncio.open_connection(target, port),

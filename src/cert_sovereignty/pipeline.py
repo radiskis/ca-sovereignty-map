@@ -166,17 +166,24 @@ def serialize_result(
 
     # Derive a human-readable error_category
     error = result.error or ""
+    error_lower = error.lower()
     if error == "http_only":
         error_category = "http_only"
     elif result.cert_mismatch:
         error_category = "shared_hosting"
     elif shared_hosting:
         error_category = "shared_hosting"
-    elif "timeout" in error.lower():
+    elif "dns resolution failed" in error_lower:
+        # All configured resolvers (system + Quad9 + Cloudflare + Google) failed
+        # to return an A record for this domain. Distinct from ``connection_error``
+        # because the UI can communicate "name did not resolve" (likely dead
+        # domain or scanner network issue) vs "server refused the connection".
+        error_category = "dns_failed"
+    elif "timeout" in error_lower:
         error_category = "timeout"
-    elif "verification failed" in error.lower():
+    elif "verification failed" in error_lower:
         error_category = "ssl_mismatch"
-    elif "ssl" in error.lower():
+    elif "ssl" in error_lower:
         error_category = "ssl_error"
     elif error:
         error_category = "connection_error"
