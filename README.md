@@ -116,14 +116,14 @@ ca-sovereignty-map/
 ├── tests/                     pytest test suite (≥90% coverage target)
 ├── .github/workflows/
 │   ├── ci.yml                 Lint + test on push/PR
-│   ├── nightly.yml            Nightly TLS scan → commit data.json
-│   └── deploy.yml             GitHub Pages deploy
+│   ├── nightly.yml            Nightly TLS scan → deploy fresh data to Pages
+│   └── deploy.yml             GitHub Pages deploy (on static-asset push to main)
 ├── css/  js/                  Frontend (Leaflet, CARTO basemap)
 ├── index.html                 Map page
 ├── methodology.html           Methodology documentation
 ├── nordic-municipalities.topojson  Municipality boundaries (614 KB)
-├── data.json                  Full scan output (~1.6 MB, pretty-printed)
-├── data.min.json              Minified frontend payload
+├── data.json                  Manual baseline scan output (~1.6 MB, pretty-printed)
+├── data.min.json              Minified frontend baseline payload
 ├── municipality_domains.json  Phase 1 output: municipality → domain
 └── overrides.json             Manual domain corrections
 ```
@@ -206,9 +206,16 @@ uv run ruff format src tests
 
 ### Option 1 — GitHub Pages (simplest)
 
-Fork the repository and enable Pages from `Settings → Pages → Deploy from branch → main`.
-The nightly GitHub Actions workflow (`nightly.yml`) runs `scan-certs` and commits updated
-`data.json` / `data.min.json` automatically.
+Fork the repository and enable Pages from `Settings → Pages → Build and deployment
+→ Source: GitHub Actions`. The nightly workflow (`nightly.yml`) runs `scan-certs`
+and publishes the freshly generated `data.json` / `data.min.json` straight to Pages
+via `actions/deploy-pages`; nothing is committed back to `main`.
+
+The repo-tracked `data.json` / `data.min.json` act as a *baseline* — the version
+served on the first Pages deploy and any time a developer needs to reproduce a
+snapshot locally. Updates to that baseline flow through the normal signed-commit
+PR workflow (`docs/branching.md`); the nightly automation only refreshes the
+live site.
 
 ### Option 2 — UpCloud Helsinki + Coolify (~7 €/month)
 

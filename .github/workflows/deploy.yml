@@ -19,9 +19,12 @@ permissions:
   pages: write
   id-token: write
 
+# Share the `pages` concurrency lane with nightly.yml. cancel-in-progress=false
+# ensures a static-asset push never kills an in-progress (potentially 30 min)
+# nightly scan; the deploy simply queues.
 concurrency:
   group: pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 # Opt into Node.js 24 now to avoid forced migration noise in June 2026
 env:
