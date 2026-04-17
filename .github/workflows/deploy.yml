@@ -36,24 +36,24 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # SHA-pinned to actions/checkout@v4
-      # https://github.com/actions/checkout/releases/tag/v4
+      # SHA-pinned to actions/checkout@v6.0.2 (Node 24)
+      # https://github.com/actions/checkout/releases/tag/v6.0.2
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
 
-      # SHA-pinned to actions/configure-pages@v5
-      # https://github.com/actions/configure-pages/releases/tag/v5
+      # SHA-pinned to actions/configure-pages@v6.0.0 (Node 24)
+      # https://github.com/actions/configure-pages/releases/tag/v6.0.0
       - name: Setup Pages
-        uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b
+        uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d
 
-      # SHA-pinned to actions/upload-pages-artifact@v3
-      # https://github.com/actions/upload-pages-artifact/releases/tag/v3
+      # SHA-pinned to actions/upload-pages-artifact@v5.0.0 (Node 24)
+      # https://github.com/actions/upload-pages-artifact/releases/tag/v5.0.0
       - name: Upload site artifact
         uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9
         with:
           path: '.'   # Serve from repo root (index.html, data.min.json, css/, js/)
 
-      # SHA-pinned to actions/deploy-pages@v4
-      # https://github.com/actions/deploy-pages/releases/tag/v4
+      # SHA-pinned to actions/deploy-pages@v5.0.0 (Node 24)
+      # https://github.com/actions/deploy-pages/releases/tag/v5.0.0
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128

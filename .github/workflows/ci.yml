@@ -24,12 +24,12 @@ jobs:
     name: Lint & format
     runs-on: ubuntu-latest
     steps:
-      # SHA-pinned to actions/checkout@v4
-      # https://github.com/actions/checkout/releases/tag/v4
+      # SHA-pinned to actions/checkout@v6.0.2 (Node 24)
+      # https://github.com/actions/checkout/releases/tag/v6.0.2
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
 
-      # SHA-pinned to astral-sh/setup-uv@v5
-      # https://github.com/astral-sh/setup-uv/releases/tag/v5
+      # SHA-pinned to astral-sh/setup-uv@v8.1.0 (Node 24)
+      # https://github.com/astral-sh/setup-uv/releases/tag/v8.1.0
       - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
         with:
           enable-cache: true
@@ -56,10 +56,10 @@ jobs:
     runs-on: ubuntu-latest
     needs: lint
     steps:
-      # SHA-pinned to actions/checkout@v4
+      # SHA-pinned to actions/checkout@v6.0.2 (Node 24)
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
 
-      # SHA-pinned to astral-sh/setup-uv@v5
+      # SHA-pinned to astral-sh/setup-uv@v8.1.0 (Node 24)
       - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
         with:
           enable-cache: true
@@ -72,8 +72,8 @@ jobs:
       - name: pytest with coverage
         run: uv run pytest --cov --cov-report=term-missing --cov-report=xml
 
-      # SHA-pinned to codecov/codecov-action@v4
-      # https://github.com/codecov/codecov-action/releases/tag/v4
+      # SHA-pinned to codecov/codecov-action@v6.0.0 (Node 24)
+      # https://github.com/codecov/codecov-action/releases/tag/v6.0.0
       - name: Upload coverage
         uses: codecov/codecov-action@57e3a136b779b570ffcdbf80b3bdc90e7fab3de2
         with:
