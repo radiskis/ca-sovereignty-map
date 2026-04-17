@@ -1,0 +1,13 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security vulnerability
+    url: https://github.com/koldex/ca-sovereignty-map/security/advisories/new
+    about: |
+      Security issues must be reported privately via GitHub's security
+      advisories, not as public issues. See SECURITY.md for details.
+  - name: Project documentation
+    url: https://github.com/koldex/ca-sovereignty-map#readme
+    about: Methodology, architecture, and known limitations
+  - name: Contributing guide
+    url: https://github.com/koldex/ca-sovereignty-map/blob/main/CONTRIBUTING.md
+    about: How to run the scanner, edit overrides, and open a PR

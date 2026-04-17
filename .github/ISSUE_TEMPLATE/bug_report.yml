@@ -1,0 +1,75 @@
+name: Bug report
+description: Report a wrong domain, wrong CA classification, or pipeline bug
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting an issue. Please fill in as much as you can — the
+        more specific, the faster we can fix it.
+        **For security issues, do not use this form.** See [SECURITY.md](../../blob/main/SECURITY.md).
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      description: What kind of issue are you reporting?
+      options:
+        - Wrong domain for a municipality
+        - Wrong CA classification (domain is correct, CA label is wrong)
+        - Scan error (timeout, SSL error, etc.) that should be recoverable
+        - Map rendering or frontend bug
+        - Pipeline/CLI bug (resolve-domains, scan-certs, analyze)
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: municipality_id
+    attributes:
+      label: Municipality ID
+      description: Format `{COUNTRY}-{LAU_ID}`, e.g. `NO-3422`. Leave blank for non-municipality issues.
+      placeholder: "NO-3422"
+
+  - type: input
+    id: municipality_name
+    attributes:
+      label: Municipality name
+      placeholder: "Åmot"
+
+  - type: input
+    id: current_domain
+    attributes:
+      label: Currently configured domain
+      description: What the map shows now.
+      placeholder: "www.amot.no"
+
+  - type: input
+    id: expected_domain
+    attributes:
+      label: Expected domain (if known)
+      placeholder: "amot.kommune.no"
+
+  - type: textarea
+    id: verification
+    attributes:
+      label: Verification evidence
+      description: |
+        Output of `curl -I` and/or `openssl s_client -connect ...` for the
+        expected domain, so we can confirm before editing `overrides.json`.
+      render: shell
+
+  - type: textarea
+    id: current_observation
+    attributes:
+      label: What you see now
+      description: Screenshot of the map popup, error message, or exact map click-path.
+    validations:
+      required: true
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else
+      description: Environment, browser, timestamps, related issues.

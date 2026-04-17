@@ -1,0 +1,31 @@
+# Code owners for ca-sovereignty-map
+#
+# The code owner is automatically requested for review on any pull request
+# that modifies a matching path. Order matters — later matches override
+# earlier ones.
+#
+# Syntax reference:
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default: everything in the repo
+*                                     @koldex
+
+# Core scanning pipeline
+/src/cert_sovereignty/                @koldex
+/tests/                               @koldex
+
+# Municipality domain overrides — the most frequently edited file by
+# potential external contributors adding or correcting entries
+/overrides.json                       @koldex
+/municipality_domains.json            @koldex
+
+# Infrastructure / CI / repo governance
+/.github/                             @koldex
+/.github/workflows/                   @koldex
+/.github/rulesets/                    @koldex
+/scripts/                             @koldex
+
+# Frontend assets
+/index.html                           @koldex
+/css/                                 @koldex
+/js/                                  @koldex

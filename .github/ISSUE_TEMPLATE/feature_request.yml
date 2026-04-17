@@ -1,0 +1,61 @@
+name: Feature request
+description: Suggest a new feature, country expansion, or methodology improvement
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting an improvement. The project focuses on Nordic
+        and Baltic municipalities and their TLS certificate authorities, so
+        the most actionable feature requests tend to be in that scope.
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      options:
+        - New country / jurisdiction coverage
+        - New CA signature
+        - Scan pipeline improvement
+        - Classification methodology
+        - Map / frontend UX
+        - Data export / API
+        - Documentation
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem this solves
+      description: What gap or shortcoming does this feature address?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: |
+        How should this work? Sketches, pseudocode, references to similar
+        features in other projects are all welcome.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Other approaches you thought about, and why you prefer the proposal above.
+
+  - type: textarea
+    id: data_source
+    attributes:
+      label: Authoritative data source
+      description: |
+        For country expansion or CA signature additions, cite where the
+        authoritative list of municipalities or CA fingerprints comes from
+        (e.g. Eurostat GISCO LAU, CCADB, Wikidata SPARQL, national statistics
+        agency).
