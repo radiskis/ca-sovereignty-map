@@ -1189,5 +1189,45 @@
   "NO-4642": {
     "domain": "laerdal.kommune.no",
     "reason": "laerdal.no CNAMEs to laerdal.com (Laerdal Medical, commercial); laerdal.kommune.no 200 OK, Let's Encrypt R12 verified"
+  },
+  "DK-173": {
+    "domain": "ltk.dk",
+    "reason": "No domain data; correct domain is ltk.dk"
+  },
+  "DK-175": {
+    "domain": "rk.dk",
+    "reason": "No domain data; correct domain is rk.dk"
+  },
+  "DK-185": {
+    "domain": "taarnby.dk",
+    "reason": "No domain data; correct domain is taarnby.dk"
+  },
+  "DK-190": {
+    "domain": "furesoe.dk",
+    "reason": "No domain data; correct domain is furesoe.dk"
+  },
+  "DK-201": {
+    "domain": "alleroed.dk",
+    "reason": "No domain data; correct domain is alleroed.dk"
+  },
+  "DK-320": {
+    "domain": "faxekommune.dk",
+    "reason": "faxe.dk is not in use; correct domain is faxekommune.dk"
+  },
+  "DK-430": {
+    "domain": "fmk.dk",
+    "reason": "faaborg-midtfyn.dk is not in use; correct domain is fmk.dk"
+  },
+  "DK-480": {
+    "domain": "nordfynskommune.dk",
+    "reason": "nordfyns.dk does not exist; correct domain is nordfynskommune.dk"
+  },
+  "DK-550": {
+    "domain": "toender.dk",
+    "reason": "tonder.dk is not in use; correct domain is toender.dk"
+  },
+  "DK-820": {
+    "domain": "vesthimmerland.dk",
+    "reason": "vesthimmerlands.dk is not in use; correct domain is vesthimmerland.dk"
   }
 }
