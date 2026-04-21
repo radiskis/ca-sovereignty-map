@@ -1229,5 +1229,18 @@
   "DK-820": {
     "domain": "vesthimmerland.dk",
     "reason": "vesthimmerlands.dk is not in use; correct domain is vesthimmerland.dk"
-  }
+  },
+  "DK-155": {
+    "domain": "dragoer.dk",
+    "reason": "dragor.dk has no TLS (port 443 refused) and HTTP 301→https://dragoer.dk/; dragoer.dk 301→www, 200 OK, cert CN=dragoer.dk, Let's Encrypt E8 verified"
+  },
+  "DK-563": {
+    "domain": "fanoe.dk",
+    "reason": "fano.dk times out on port 443; fanoe.dk 200 OK, cert CN=fanoe.dk, Let's Encrypt E7 verified"
+  },
+  "DK-760": {
+    "domain": "rksk.dk",
+    "reason": "ringkobing-skjern.dk gives SSL handshake failure (sslv3 alert); rksk.dk (Ringkøbing-Skjern Kommune abbreviation) 200 OK, cert CN=rksk.dk, Let's Encrypt R13 verified"
+  },
+  "_todo_DK-329": "Ringsted — ringsted.dk and www.ringsted.dk time out on both port 80 and 443 from multiple networks; needs on-site verification to find the authoritative domain (ringstedkom.dk also times out)"
 }
