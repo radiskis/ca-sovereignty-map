@@ -1242,5 +1242,54 @@
     "domain": "rksk.dk",
     "reason": "ringkobing-skjern.dk gives SSL handshake failure (sslv3 alert); rksk.dk (Ringkøbing-Skjern Kommune abbreviation) 200 OK, cert CN=rksk.dk, Let's Encrypt R13 verified"
   },
-  "_todo_DK-329": "Ringsted — ringsted.dk and www.ringsted.dk time out on both port 80 and 443 from multiple networks; needs on-site verification to find the authoritative domain (ringstedkom.dk also times out)"
+  "_todo_DK-329": "Ringsted — ringsted.dk and www.ringsted.dk time out on both port 80 and 443 from multiple networks; needs on-site verification to find the authoritative domain (ringstedkom.dk also times out)",
+  "_section_SE": "Swedish overrides — municipalities whose guessed apex .se failed to scan (dns_failed / http_only / timeout) or which were absent from Phase 1 output. All verified with curl -I + openssl s_client.",
+  "SE-1256": {
+    "domain": "ostragoinge.se",
+    "reason": "Östra Göinge — no entry in municipality_domains.json (Phase 1 skipped); ostragoinge.se 200 OK, cert CN=ostragoinge.se, Let's Encrypt R12 verified"
+  },
+  "SE-1438": {
+    "domain": "dalsed.se",
+    "reason": "Dals-Ed — no entry in municipality_domains.json (Phase 1 skipped); dalsed.se 301→www.dalsed.se, cert CN=www.dalsed.se, Let's Encrypt R12 verified"
+  },
+  "SE-0114": {
+    "domain": "upplandsvasby.se",
+    "reason": "Upplands Väsby — guessed upplands-vasby.se is HTTP-only (no TLS on :443); upplandsvasby.se (no hyphen) 200 OK, cert CN=*.upplandsvasby.se O=UPPLANDS VÄSBY KOMMUN, GlobalSign RSA OV SSL verified"
+  },
+  "SE-0509": {
+    "domain": "www.odeshog.se",
+    "reason": "Ödeshög — guessed odeshog.se has no DNS A record; www.odeshog.se 200 OK, cert CN=www.odeshog.se, Let's Encrypt R13 verified"
+  },
+  "SE-0512": {
+    "domain": "www.ydre.se",
+    "reason": "Ydre — guessed ydre.se has no DNS A record; www.ydre.se 200 OK, cert CN=www.ydre.se, Let's Encrypt R12 verified"
+  },
+  "SE-0560": {
+    "domain": "www.boxholm.se",
+    "reason": "Boxholm — guessed boxholm.se has no DNS A record; www.boxholm.se 200 OK, cert CN=www.boxholm.se, Let's Encrypt R12 verified"
+  },
+  "SE-0561": {
+    "domain": "www.atvidaberg.se",
+    "reason": "Åtvidaberg — guessed atvidaberg.se has no DNS A record; www.atvidaberg.se 200 OK, cert CN=www.atvidaberg.se, Let's Encrypt R13 verified"
+  },
+  "SE-0662": {
+    "domain": "www.gislaved.se",
+    "reason": "Gislaved — apex gislaved.se was classified http_only in scan; www.gislaved.se 200 OK, cert CN=*.gislaved.se O=Gislaveds kommun, GoDaddy Secure Certificate Authority G2 verified"
+  },
+  "SE-0860": {
+    "domain": "www.hultsfred.se",
+    "reason": "Hultsfred — apex hultsfred.se was classified timeout in scan; www.hultsfred.se 200 OK, cert CN=*.hultsfred.se O=Hultsfreds kommun, DigiCert Global G2 verified"
+  },
+  "SE-0882": {
+    "domain": "www.oskarshamn.se",
+    "reason": "Oskarshamn — apex oskarshamn.se was classified timeout in scan; www.oskarshamn.se 200 OK, cert CN=*.oskarshamn.se O=Oskarshamns kommun, DigiCert Global G2 verified"
+  },
+  "SE-1282": {
+    "domain": "www.landskrona.se",
+    "reason": "Landskrona — apex landskrona.se was classified http_only in scan; www.landskrona.se 200 OK, cert CN=*.landskrona.se O=Landskrona stad, DigiCert Global G2 verified"
+  },
+  "SE-2283": {
+    "domain": "www.solleftea.se",
+    "reason": "Sollefteå — apex solleftea.se was classified timeout in scan; www.solleftea.se 200 OK, cert CN=*.solleftea.se O=Sollefteå Kommun, GlobalSign Atlas R3 OV ACME verified"
+  }
 }
