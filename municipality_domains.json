@@ -36,8 +36,8 @@
     "name": "Dragør",
     "country": "DK",
     "population": 14569,
-    "domain": "dragor.dk",
-    "domain_source": "guess"
+    "domain": "dragoer.dk",
+    "domain_source": "override"
   },
   {
     "id": "DK-157",
@@ -236,8 +236,8 @@
     "name": "Faxe",
     "country": "DK",
     "population": 36713,
-    "domain": "faxe.dk",
-    "domain_source": "guess"
+    "domain": "faxekommune.dk",
+    "domain_source": "override"
   },
   {
     "id": "DK-326",
@@ -356,8 +356,8 @@
     "name": "Faaborg-Midtfyn",
     "country": "DK",
     "population": 51683,
-    "domain": "faaborg-midtfyn.dk",
-    "domain_source": "guess"
+    "domain": "fmk.dk",
+    "domain_source": "override"
   },
   {
     "id": "DK-440",
@@ -436,8 +436,8 @@
     "name": "Tønder",
     "country": "DK",
     "population": 37050,
-    "domain": "tonder.dk",
-    "domain_source": "guess"
+    "domain": "toender.dk",
+    "domain_source": "override"
   },
   {
     "id": "DK-561",
@@ -452,8 +452,8 @@
     "name": "Fanø",
     "country": "DK",
     "population": 3456,
-    "domain": "fano.dk",
-    "domain_source": "guess"
+    "domain": "fanoe.dk",
+    "domain_source": "override"
   },
   {
     "id": "DK-573",
@@ -628,8 +628,8 @@
     "name": "Ringkøbing-Skjern",
     "country": "DK",
     "population": 56182,
-    "domain": "ringkobing-skjern.dk",
-    "domain_source": "guess"
+    "domain": "rksk.dk",
+    "domain_source": "override"
   },
   {
     "id": "DK-766",
@@ -692,8 +692,8 @@
     "name": "Vesthimmerlands",
     "country": "DK",
     "population": 36362,
-    "domain": "vesthimmerlands.dk",
-    "domain_source": "guess"
+    "domain": "vesthimmerland.dk",
+    "domain_source": "override"
   },
   {
     "id": "DK-825",
@@ -6284,8 +6284,8 @@
     "name": "Åmot",
     "country": "NO",
     "population": 4356,
-    "domain": "www.amot.no",
-    "domain_source": "guess"
+    "domain": "amot.kommune.no",
+    "domain_source": "override"
   },
   {
     "id": "NO-3423",
@@ -6396,8 +6396,8 @@
     "name": "Nord-Fron",
     "country": "NO",
     "population": 5723,
-    "domain": "www.nord-fron.no",
-    "domain_source": "guess"
+    "domain": "nord-fron.kommune.no",
+    "domain_source": "override"
   },
   {
     "id": "NO-3437",
@@ -6676,7 +6676,7 @@
     "name": "Kviteseid",
     "country": "NO",
     "population": 2403,
-    "domain": "vinje.no",
+    "domain": "kviteseid.kommune.no",
     "domain_source": "override"
   },
   {
@@ -6708,8 +6708,8 @@
     "name": "Vinje",
     "country": "NO",
     "population": 3676,
-    "domain": "vinje.no",
-    "domain_source": "guess"
+    "domain": "vinje.kommune.no",
+    "domain_source": "override"
   },
   {
     "id": "NO-4201",
@@ -7172,8 +7172,8 @@
     "name": "Lærdal",
     "country": "NO",
     "population": 2126,
-    "domain": "laerdal.no",
-    "domain_source": "guess"
+    "domain": "laerdal.kommune.no",
+    "domain_source": "override"
   },
   {
     "id": "NO-4643",
@@ -7548,8 +7548,8 @@
     "name": "Rindal",
     "country": "NO",
     "population": 2003,
-    "domain": "www.rindal.no",
-    "domain_source": "guess"
+    "domain": "rindal.kommune.no",
+    "domain_source": "override"
   },
   {
     "id": "NO-5401",
@@ -7868,8 +7868,8 @@
     "name": "Upplands Väsby",
     "country": "SE",
     "population": 47184,
-    "domain": "upplands-vasby.se",
-    "domain_source": "guess"
+    "domain": "upplandsvasby.se",
+    "domain_source": "override"
   },
   {
     "id": "SE-0115",
@@ -8212,16 +8212,16 @@
     "name": "Ödeshög",
     "country": "SE",
     "population": 5338,
-    "domain": "odeshog.se",
-    "domain_source": "guess"
+    "domain": "www.odeshog.se",
+    "domain_source": "override"
   },
   {
     "id": "SE-0512",
     "name": "Ydre",
     "country": "SE",
     "population": 3726,
-    "domain": "ydre.se",
-    "domain_source": "guess"
+    "domain": "www.ydre.se",
+    "domain_source": "override"
   },
   {
     "id": "SE-0513",
@@ -8236,16 +8236,16 @@
     "name": "Boxholm",
     "country": "SE",
     "population": 5441,
-    "domain": "boxholm.se",
-    "domain_source": "guess"
+    "domain": "www.boxholm.se",
+    "domain_source": "override"
   },
   {
     "id": "SE-0561",
     "name": "Åtvidaberg",
     "country": "SE",
     "population": 11427,
-    "domain": "atvidaberg.se",
-    "domain_source": "guess"
+    "domain": "www.atvidaberg.se",
+    "domain_source": "override"
   },
   {
     "id": "SE-0562",
@@ -8348,8 +8348,8 @@
     "name": "Gislaved",
     "country": "SE",
     "population": 29635,
-    "domain": "gislaved.se",
-    "domain_source": "guess"
+    "domain": "www.gislaved.se",
+    "domain_source": "override"
   },
   {
     "id": "SE-0665",
@@ -8508,8 +8508,8 @@
     "name": "Hultsfred",
     "country": "SE",
     "population": 14107,
-    "domain": "hultsfred.se",
-    "domain_source": "guess"
+    "domain": "www.hultsfred.se",
+    "domain_source": "override"
   },
   {
     "id": "SE-0861",
@@ -8548,8 +8548,8 @@
     "name": "Oskarshamn",
     "country": "SE",
     "population": 27147,
-    "domain": "oskarshamn.se",
-    "domain_source": "guess"
+    "domain": "www.oskarshamn.se",
+    "domain_source": "override"
   },
   {
     "id": "SE-0883",
@@ -8804,8 +8804,8 @@
     "name": "Landskrona",
     "country": "SE",
     "population": 46305,
-    "domain": "landskrona.se",
-    "domain_source": "guess"
+    "domain": "www.landskrona.se",
+    "domain_source": "override"
   },
   {
     "id": "SE-1283",
@@ -9860,8 +9860,8 @@
     "name": "Sollefteå",
     "country": "SE",
     "population": 18872,
-    "domain": "solleftea.se",
-    "domain_source": "guess"
+    "domain": "www.solleftea.se",
+    "domain_source": "override"
   },
   {
     "id": "SE-2284",
@@ -10166,5 +10166,69 @@
     "population": 22664,
     "domain": "kiruna.se",
     "domain_source": "guess"
+  },
+  {
+    "id": "DK-173",
+    "name": "Lyngby-Taarbæk",
+    "country": "DK",
+    "population": 56614,
+    "domain": "ltk.dk",
+    "domain_source": "override"
+  },
+  {
+    "id": "DK-175",
+    "name": "Rødovre",
+    "country": "DK",
+    "population": 41113,
+    "domain": "rk.dk",
+    "domain_source": "override"
+  },
+  {
+    "id": "DK-185",
+    "name": "Tårnby",
+    "country": "DK",
+    "population": 42670,
+    "domain": "taarnby.dk",
+    "domain_source": "override"
+  },
+  {
+    "id": "DK-190",
+    "name": "Furesø",
+    "country": "DK",
+    "population": 41001,
+    "domain": "furesoe.dk",
+    "domain_source": "override"
+  },
+  {
+    "id": "DK-201",
+    "name": "Allerød",
+    "country": "DK",
+    "population": 25893,
+    "domain": "alleroed.dk",
+    "domain_source": "override"
+  },
+  {
+    "id": "DK-480",
+    "name": "Nordfyns",
+    "country": "DK",
+    "population": 29549,
+    "domain": "nordfynskommune.dk",
+    "domain_source": "override"
+  },
+  {
+    "id": "SE-1256",
+    "name": "Östra Göinge",
+    "country": "SE",
+    "population": 15017,
+    "domain": "ostragoinge.se",
+    "domain_source": "override"
+  },
+  {
+    "id": "SE-1438",
+    "name": "Dals-Ed",
+    "country": "SE",
+    "population": 4761,
+    "domain": "dalsed.se",
+    "domain_source": "override"
   }
 ]
