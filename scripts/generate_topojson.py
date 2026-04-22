@@ -31,8 +31,7 @@ CACHE_DIR.mkdir(exist_ok=True)
 
 # Eurostat GISCO Local Administrative Units 2021, 1:1M scale, WGS84
 GISCO_URL = (
-    "https://gisco-services.ec.europa.eu/distribution/v2/lau/geojson/"
-    "LAU_RG_01M_2021_4326.geojson"
+    "https://gisco-services.ec.europa.eu/distribution/v2/lau/geojson/LAU_RG_01M_2021_4326.geojson"
 )
 GISCO_CACHE = CACHE_DIR / "gisco_lau_2021.geojson"
 
@@ -50,9 +49,9 @@ def download_gisco(force: bool = False) -> Path:
         print(f"Using cached GISCO data: {GISCO_CACHE} ({size_mb:.0f}MB)")
         return GISCO_CACHE
 
-    print(f"Downloading GISCO LAU 2021 (~125MB) from Eurostat...")
+    print("Downloading GISCO LAU 2021 (~125MB) from Eurostat...")
     print(f"  URL: {GISCO_URL}")
-    print(f"  This may take 1-2 minutes...")
+    print("  This may take 1-2 minutes...")
 
     try:
         urllib.request.urlretrieve(GISCO_URL, GISCO_CACHE)
@@ -71,7 +70,7 @@ def download_gisco(force: bool = False) -> Path:
 
 def load_and_filter(gisco_path: Path) -> dict:
     """Load GISCO GeoJSON and filter for Nordic countries."""
-    print(f"Parsing GISCO data (~125MB JSON, takes a few seconds)...")
+    print("Parsing GISCO data (~125MB JSON, takes a few seconds)...")
     with open(gisco_path, encoding="utf-8") as f:
         data = json.load(f)
 
@@ -149,37 +148,97 @@ def run_cmd(cmd: list[str], input_data: str | None = None) -> str:
     return result.stdout
 
 
-def convert_to_topojson(geojson_path: Path, output_path: Path) -> None:
-    """Convert GeoJSON to TopoJSON using topojson-server npm packages."""
+def convert_to_topojson(
+    geojson_path: Path,
+    output_path: Path,
+    simplification: float | None = None,
+) -> None:
+    """Convert GeoJSON to TopoJSON using topojson-server npm packages.
+
+    By default this skips ``toposimplify`` entirely and relies on
+    ``topoquantize`` alone for the wire-size reduction. Previous versions of
+    this script used ``toposimplify -P 0.001`` (retain 0.1 % of points),
+    which collapsed small islands and enclaves (Bornholm, Frederiksberg,
+    Fanø, Dragør, Christiansø, Langeland, Ærø, …) into 2- to 4-point
+    "polygons" that could not render as filled areas on the map. See #22
+    for the full analysis and point-count evidence.
+
+    Trade-off: output grows from ~0.6 MB to ~1.9 MB. Over HTTP the asset is
+    gzipped by GitHub Pages, which is still well within budget for a static
+    map application.
+
+    If you *do* need to simplify further (e.g. for a mobile build), pass a
+    spherical-area threshold via ``simplification``. Values in the range
+    ``1e-9`` – ``5e-9`` preserve all DK polygons at ≥ 10 points each; the
+    legacy ``-P 0.001`` proportion mode is destructive for small polygons and
+    should not be used here.
+    """
     print("\nConverting to TopoJSON...")
 
     # Step 1: geo2topo (GeoJSON → TopoJSON)
-    # topojson-server provides the geo2topo command
-    print("  Step 1/3: geo2topo (GeoJSON → TopoJSON)")
-    topo_raw = run_cmd(
-        ["npx", "-y", "-p", "topojson-server", "geo2topo",
-         f"municipalities={geojson_path}"]
+    print("  Step 1/2: geo2topo (GeoJSON → TopoJSON)")
+    topo = run_cmd(
+        ["npx", "-y", "-p", "topojson-server", "geo2topo", f"municipalities={geojson_path}"]
     )
 
-    # Step 2: toposimplify (reduce geometry complexity)
-    # topojson-simplify provides toposimplify and topoquantize
-    print("  Step 2/3: toposimplify (reduce geometry detail)")
-    topo_simplified = run_cmd(
-        ["npx", "-y", "-p", "topojson-simplify", "toposimplify", "-P", "0.001"],
-        input_data=topo_raw,
-    )
+    # Optional: toposimplify (spherical-area mode — shape-preserving).
+    # We intentionally avoid the `-P` (proportion) mode because it collapses
+    # tiny polygons regardless of how many source points they started with.
+    if simplification is not None and simplification > 0:
+        print(f"  Step 2a/2: toposimplify -s {simplification}")
+        topo = run_cmd(
+            ["npx", "-y", "-p", "topojson-simplify", "toposimplify", "-s", str(simplification)],
+            input_data=topo,
+        )
 
-    # Step 3: topoquantize (reduce coordinate precision → smaller file)
-    print("  Step 3/3: topoquantize (reduce coordinate precision)")
-    topo_quantized = run_cmd(
+    # Step 2b: topoquantize (reduce coordinate precision → smaller file)
+    print("  Step 2b/2: topoquantize 1e6")
+    topo = run_cmd(
         ["npx", "-y", "-p", "topojson-simplify", "topoquantize", "1e6"],
-        input_data=topo_simplified,
+        input_data=topo,
     )
 
     # Write output
-    output_path.write_text(topo_quantized, encoding="utf-8")
+    output_path.write_text(topo, encoding="utf-8")
     size_kb = output_path.stat().st_size / 1024
     print(f"\n  Output: {output_path} ({size_kb:.0f}KB)")
+
+
+def point_count_summary(topo: dict) -> dict[str, dict[str, float | int]]:
+    """Return point-count stats by country for validation/reporting."""
+    arcs = topo.get("arcs", [])
+    geoms = topo.get("objects", {}).get("municipalities", {}).get("geometries", [])
+
+    def arc_len(index: int) -> int:
+        if index < 0:
+            index = ~index
+        return len(arcs[index])
+
+    def geom_points(geom: dict) -> int:
+        if geom.get("type") == "Polygon":
+            return sum(arc_len(idx) for ring in geom.get("arcs", []) for idx in ring)
+        if geom.get("type") == "MultiPolygon":
+            return sum(
+                arc_len(idx) for poly in geom.get("arcs", []) for ring in poly for idx in ring
+            )
+        return 0
+
+    by_country: dict[str, list[int]] = {}
+    for geom in geoms:
+        country = geom.get("properties", {}).get("country", "?")
+        by_country.setdefault(country, []).append(geom_points(geom))
+
+    summary: dict[str, dict[str, float | int]] = {}
+    for country, counts in by_country.items():
+        summary[country] = {
+            "n": len(counts),
+            "min": min(counts) if counts else 0,
+            "avg": (sum(counts) / len(counts)) if counts else 0.0,
+            "max": max(counts) if counts else 0,
+            "under_10": sum(1 for c in counts if c < 10),
+            "under_20": sum(1 for c in counts if c < 20),
+        }
+    return summary
 
 
 # ── Main ──────────────────────────────────────────────────────────────────────
@@ -205,8 +264,12 @@ def main() -> None:
     parser.add_argument(
         "--simplification",
         type=float,
-        default=0.001,
-        help="toposimplify -P value (0.0 = maximum, 1.0 = no simplification, default: 0.001)",
+        default=0.0,
+        help=(
+            "Optional spherical-area threshold passed to `toposimplify -s`. "
+            "Default: 0.0 (skip simplification entirely; only quantize). "
+            "Do NOT use the old proportion mode `-P 0.001` — it destroys small polygons."
+        ),
     )
     args = parser.parse_args()
 
@@ -216,8 +279,8 @@ def main() -> None:
     print("CAmap Nordics — Municipality Boundary Generator")
     print("=" * 60)
     print(f"Countries: {', '.join(COUNTRIES)}")
-    print(f"Source:    Eurostat GISCO LAU 2021 (open data)")
-    print(f"License:   CC BY 4.0 (Eurostat)")
+    print("Source:    Eurostat GISCO LAU 2021 (open data)")
+    print("License:   CC BY 4.0 (Eurostat)")
     print(f"Output:    {output_path}")
     print()
 
@@ -240,7 +303,8 @@ def main() -> None:
         return
 
     # Step 4: Convert to TopoJSON
-    convert_to_topojson(geojson_path, output_path)
+    simplify = args.simplification if args.simplification > 0 else None
+    convert_to_topojson(geojson_path, output_path, simplification=simplify)
 
     # Step 5: Validate
     print("\nValidating output...")
@@ -260,6 +324,28 @@ def main() -> None:
         country_counts[country] = country_counts.get(country, 0) + 1
     for cc in sorted(country_counts):
         print(f"    {cc}: {country_counts[cc]}")
+
+    print("\nPoint-count validation (lower is worse; < 10 often means a visibly broken polygon):")
+    point_stats = point_count_summary(topo)
+    print(f"  {'country':8} {'n':5} {'min':6} {'avg':8} {'max':6} {'<10':5} {'<20':5}")
+    for cc in sorted(point_stats):
+        s = point_stats[cc]
+        print(
+            f"  {cc:8} {s['n']:5} {s['min']:6} {s['avg']:8.1f} {s['max']:6} "
+            f"{s['under_10']:5} {s['under_20']:5}"
+        )
+
+    # Hard fail if any DK polygon still has < 10 points. Denmark's islands and
+    # enclaves are the most visually obvious regressions, and this threshold
+    # catches the specific failure mode that prompted #22.
+    dk_stats = point_stats.get("DK")
+    if dk_stats and dk_stats["under_10"] > 0:
+        print(
+            "\nERROR: DK polygons still contain < 10-point geometries. "
+            "This output would visibly regress the frontend map.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
 
     print("\n" + "=" * 60)
     print("✓ nordic-municipalities.topojson generated successfully")
