@@ -252,8 +252,8 @@
     "name": "Ringsted",
     "country": "DK",
     "population": 34847,
-    "domain": "ringsted.dk",
-    "domain_source": "guess"
+    "domain": "selvbetjening.ringsted.dk",
+    "domain_source": "override"
   },
   {
     "id": "DK-330",

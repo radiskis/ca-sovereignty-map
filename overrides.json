@@ -1242,7 +1242,10 @@
     "domain": "rksk.dk",
     "reason": "ringkobing-skjern.dk gives SSL handshake failure (sslv3 alert); rksk.dk (Ringkøbing-Skjern Kommune abbreviation) 200 OK, cert CN=rksk.dk, Let's Encrypt R13 verified"
   },
-  "_todo_DK-329": "Ringsted — ringsted.dk and www.ringsted.dk time out on both port 80 and 443 from multiple networks; needs on-site verification to find the authoritative domain (ringstedkom.dk also times out)",
+  "DK-329": {
+    "domain": "selvbetjening.ringsted.dk",
+    "reason": "Ringsted — apex ringsted.dk (195.182.39.60) is geo-blocked at TCP:443 from non-DK networks (confirmed timeout from Finland and Azure US West over 60s). selvbetjening.ringsted.dk is Ringsted Kommune's citizen self-service portal, 200 OK, cert is wildcard CN=*.ringsted.dk (SAN=*.ringsted.dk), issued by C=AT, O=ZeroSSL GmbH (ZeroSSL ECC DV SSL CA 2). Wildcard *.ringsted.dk cert verifies this is the municipality's authoritative TLS endpoint."
+  },
   "_section_SE": "Swedish overrides — municipalities whose guessed apex .se failed to scan (dns_failed / http_only / timeout) or which were absent from Phase 1 output. All verified with curl -I + openssl s_client.",
   "SE-1256": {
     "domain": "ostragoinge.se",
