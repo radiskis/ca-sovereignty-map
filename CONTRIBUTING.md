@@ -76,6 +76,17 @@ Every override in [`overrides.json`](overrides.json) must:
 3. **Exclude commercial `.no`/`.fi`/etc. domains** that happen to resolve.
    Norwegian municipalities should generally use `{slug}.kommune.no` unless
    a `.no` domain is demonstrably authoritative.
+4. **Include a matching update to `municipality_domains.json`** in the same
+   PR. The nightly workflow currently only runs Phase 2 of the pipeline
+   (`scan-certs`), not Phase 1 (`bootstrap_domains.py`), so changes to
+   `overrides.json` alone do not reach the live map. Use a targeted merge
+   (update an existing record's `domain` + `domain_source: "override"`, or
+   append a new record populated from the topojson); do **not** run a full
+   `bootstrap_domains.py` regen unless you know Wikidata is currently
+   returning complete results for every Baltic country, which it often
+   isn't. See [#19](https://github.com/koldex/ca-sovereignty-map/issues/19)
+   for the tracking issue and PR [#20](https://github.com/koldex/ca-sovereignty-map/pull/20)
+   for a worked example of the targeted-merge pattern.
 
 ## Pull request checklist
 

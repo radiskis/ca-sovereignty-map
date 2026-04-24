@@ -1,71 +1,48 @@
 # CAmap Nordics — Session Memory
 
-**session_start:** 2026-03-24T19:32:00Z
-**phase:** Initial scaffold creation
+**last_verified:** 2026-04-24T13:00:00Z
+**phase:** Post-#23 — boundary geometry, overrides and pipeline-sync all stabilised; one open issue (#19) remains.
 
-## Session summary
+## Handoff summary (most recent session: 2026-04-21 → 2026-04-23)
 
-Created complete project scaffold from planning documents v2 + v3 + hosting plan.
-All files generated in a single session.
+Triggered by issue #15 (tlk, Danish contributor) reporting missing Danish municipalities on the live map. The investigation cascaded through five override/pipeline PRs and one root-cause boundary-geometry PR:
 
-## What was created
+- #14 (merged) — 10 DK domain overrides (6 previously absent, 4 wrong guesses). Authored by `tlk`; verification pass done retroactively by `koldex`.
+- #16 (merged, closed #15) — 3 DK overrides for `unknown`-category kommuner: Dragør → `dragoer.dk`, Fanø → `fanoe.dk`, Ringkøbing-Skjern → `rksk.dk`. `_todo_DK-329` added for Ringsted.
+- #17 (closed by #18) — Swedish equivalent of #15; 14 SE kommuner white or unknown.
+- #18 (merged, closed #17) — 12 SE overrides. After local scan: 290/290 classified, 0 unknown.
+- #19 (open) — **Nightly workflow skips Phase 1.** Exposed when the morning-after nightly still showed the old domains. Every override PR before #20 was a no-op on the live map.
+- #20 (merged, partial fix for #19) — Synchronised `municipality_domains.json` with accumulated overrides via a targeted merge (not a full `bootstrap_domains.py` regen, because SPARQL drops 243 Baltic entries).
+- #21 (merged) — DK-329 Ringsted resolved via `selvbetjening.ringsted.dk`. Apex `ringsted.dk` is geo-blocked at TCP:443 to non-DK networks.
+- #22 (closed by #23) — Topojson geometry over-simplified. Every DK polygon had < 40 points, 5 had only 2–4 points (invisible line segments).
+- #23 (merged, closed #22) — Regenerated topojson without destructive simplification. All DK/NO/LV polygons now ≥ 10 points. File size 0.6 MB → 1.9 MB on disk (~680 KB gzipped).
 
-### Python package (src/cert_sovereignty/)
-- models.py — Jurisdiction, RiskLevel, SignalKind, Evidence, CertChainEntry, ClassificationResult
-- signatures.py — CASignature database (Let's Encrypt, DigiCert, Sectigo, Amazon, Google, GoDaddy, Cloudflare, Entrust, SSL.com, ZeroSSL, Microsoft, GlobalSign, HARICA, Certum, D-TRUST, SwissSign, Buypass, Telia)
-- tls.py — OpenSSL subprocess scanner + Python ssl fallback
-- probes.py — DNS CAA + crt.sh CT log probes
-- classifier.py — Evidence aggregation, confidence rules (_CA_RULES)
-- resolve.py — Wikidata SPARQL + domain guessing with Nordic character transliteration
-- pipeline.py — scan_many() with semaphore, build_data_json(), write_output()
-- analyze.py — compute_stats(), print_report()
-- cli.py — resolve-domains, scan-certs, analyze, update-ccadb
-- log.py — Loguru config
-- constants.py — All constants, Wikidata SPARQL queries per country, CCADB URLs
+## Post-chain courtesy comment
 
-### Tests (tests/)
-- conftest.py — fixtures (letsencrypt_leaf, buypass_leaf, evidence, sample_data_json)
-- test_signatures.py — match_patterns, CA database validation
-- test_classifier.py — _aggregate, _rule_confidence, classify()
-- test_tls.py — _extract_pem_certs, _parse_brief_output, _match_cert_to_ca
-- test_probes.py — probe_caa (mocked), probe_ct_log error handling
-- test_pipeline.py — serialize_result, build_data_json, write_output
-- test_data_validation.py — compute_stats, data.json schema validation
+Posted on issue #15 after merge of #23: short thank-you to `tlk` framed in the sovereignty context, including subtle Danish linguistic cues. No co-author attribution (per user request).
 
-### GitHub Actions
-- ci.yml — ruff + pytest on push/PR
-- nightly.yml — cron 02:00 UTC, scan-certs, commit data.json
-- deploy.yml — GitHub Pages deploy on index.html/css/js/data changes
+## Key facts to carry forward
 
-### Frontend
-- index.html — Leaflet map, Finnish UI, CARTO basemap
-- methodology.html — Finnish methodology page
-- css/shared.css — CSS variables, nav, badges, utilities
-- css/map.css — Map layout, legend, popup, chain visualization
-- css/content.css — Content page typography
-- js/map-shared.js — initMap, buildPopup, getMuniColor, addLegend, fetchMapData
-- js/nav.js — Active link highlighting
+- **DK kommune count:** 99 (98 DST kommuner + Christiansø). Fully covered after #23.
+- **Topojson size:** 1.9 MB on disk, ~680 KB wire (gzipped by GitHub Pages).
+- **`municipality_domains.json`:** 1 279 entries, 319 overrides.
+- **Test suite:** 91 tests, all passing.
 
-### Data files
-- overrides.json — Helsinki (hel.fi), Espoo, Stockholm, Oslo, Copenhagen
-- municipality_domains.json — empty array (populated by resolve-domains)
-- data.json — empty template
-- CLAUDE.md — AI context (English)
-- ai_context.md — AI context (Finnish)
-- README.md — Finnish README
-- LICENCE — placeholder
+## Open problems waiting for attention
 
-## Known issues to fix
+1. **#19 — Phase 1 not wired into nightly workflow.** Blocker for auto-propagation of override PRs. Root cause: `bootstrap_domains.py` currently produces regressions when Wikidata SPARQL returns fewer rows than the committed baseline (243 EE/LT/LV/NO entries affected at the time of investigation).
+2. **SE-0617 Gnosjö and SE-2084 Avesta** — classify correctly when the apex responds but intermittently time out from the CI network. Candidate for a scanner `--retry` flag.
+3. **No commit-time check on topojson polygon point counts.** #23 enforces the floor at *generation* time but not at *commit* time — someone editing the file by hand could regress without CI catching it.
 
-1. tls.py has unused `hashlib` import and dead code in `_parse_x509_cert`
-2. pipeline.py uses dynamic `__import__` for models — should use direct imports
-3. resolve.py constants reference `HTTP_TIMEOUT` from constants.py (verify it's defined there ✓)
+## Conventions established
 
-## Handoff notes
+- **Override PRs**: must include both `overrides.json` and `municipality_domains.json` until #19 lands. See PR #20 for the targeted-merge pattern.
+- **Override verification**: `curl -I` + `openssl s_client` per CONTRIBUTING.md. The `reason` field must cite HTTP status + cert CN + issuer. Safari-only verification is not sufficient — this was the finding that prompted the review of #14.
+- **Commit messages**: Conventional Commits with country scope (`fix(DK): ...`, `fix(SE): ...`, `fix(pipeline): ...`). Signed commits mandatory (`required_signatures` branch protection rule on main).
+- **CI-scoped preflight**: `ruff check src tests` + `ruff format --check src tests` + `mypy src/cert_sovereignty` + `pytest --cov` must all pass. Scripts under `scripts/` are not in the CI scope (but still should build clean).
 
-Next session should:
-1. Run `uv sync` to install dependencies
-2. Fix tls.py import issues
-3. Run pytest to verify baseline passes
-4. Generate nordic-municipalities.topojson
-5. Run first resolve-domains scan
+## Pointers to in-session artefacts
+
+- Targeted-merge script template: `/tmp/apply_overrides.py` (see PR #20 body for the logic; not committed to the repo).
+- DST cross-reference helper: `/tmp/dst_check.py` (see issue #22 body and PR #21).
+- Per-polygon point-count audit: `scripts/generate_topojson.py` now exposes `point_count_summary()` publicly.
