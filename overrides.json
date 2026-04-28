@@ -29,6 +29,10 @@
     "domain": "alytus.lt",
     "reason": "Alytaus miesto sav. — nom: Alytus"
   },
+  "LT-21": {
+    "domain": "klaipeda.lt",
+    "reason": "Klaipėdos miesto sav. — nom: Klaipėda"
+  },
   "LT-34": {
     "domain": "anyksciai.lt",
     "reason": "Anykščių rajono sav. — nom: Anykščiai"
@@ -45,6 +49,10 @@
     "domain": "druskininkai.lt",
     "reason": "Druskininkų sav. — nom: Druskininkai"
   },
+  "LT-33": {
+    "domain": "arsa.lt",
+    "reason": "Alytaus rajono sav."
+  },
   "LT-42": {
     "domain": "elektrenai.lt",
     "reason": "Elektrėnų sav. — nom: Elektrėnai"
@@ -56,6 +64,10 @@
   "LT-47": {
     "domain": "joniskis.lt",
     "reason": "Joniškio rajono sav. — nom: Joniškis"
+  },
+  "LT-55": {
+    "domain": "klaipedos-r.lt",
+    "reason": "Klaipėdos rajono sav."
   },
   "LT-94": {
     "domain": "jurbarkas.lt",
@@ -157,6 +169,10 @@
     "domain": "zarasai.lt",
     "reason": "Zarasų rajono sav. — nom: Zarasai"
   },
+  "LT-66": {
+    "domain": "panrs.lt",
+    "reason": "Panevėžio rajono sav."
+  },
   "LT-84": {
     "domain": "sakiai.lt",
     "reason": "Šakių rajono sav. — nom: Šakiai"
@@ -181,8 +197,6 @@
     "domain": "svencionys.lt",
     "reason": "Švenčionių rajono sav. — nom: Švenčionys"
   },
-  "_todo_LT-33": "Alytaus rajono savivaldybė — no working public domain found",
-  "_todo_LT-66": "Panevėžio rajono savivaldybė — no working public domain found",
   "_section_LV": "Latvian overrides — GISCO LAU uses genitive case ('Kuldīgas' not 'Kuldīga'). All 82 domains DNS-verified. Note: novads.lv shared portal is parked by DomainParking.ru (see SKIP_DOMAINS).",
   "LV-0604300": {
     "domain": "aglona.lv",
